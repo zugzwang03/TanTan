@@ -11,13 +11,12 @@ function isPhoneNumber(inputtxt) {
     else {
         return false;
     }
-}
-
+};
 
 const userSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
-        // validate: [isPhoneNumber, 'Please enter a valid phone number!'],
+        validate: [isPhoneNumber, 'Please enter a valid phone number!'],
         required: true
     },
     name: {
@@ -69,7 +68,7 @@ const userSchema = new mongoose.Schema({
         type: String
     },
     height: {
-        type: Number
+        type: String
     },
     bodyType: {
         type: String
