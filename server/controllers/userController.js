@@ -125,4 +125,14 @@ const likeToDate = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
+// const editProfile = catchAsyncErrors(async (req, res, next) => {
+//     // phoneNumber, name, gender, age, location, appearances, bio, occupation, education, interestAndHobbies, MusicAndEntertainment, Lifestyle, LanguagesSpoken, relationshipGoals, dealBreakerAndPreferences, height, bodyType, religionAndBeliefs, politicalViews, pets
+//     var {phoneNumber} = req.body;
+//     var user = await User.findOne({phoneNumber});
+//     if(!user) {
+//         return next(new ErrorHandler('user not logged in', '401'));
+//     }
+    
+// });
+
 module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate };
