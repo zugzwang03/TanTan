@@ -31,9 +31,17 @@ const userSchema = new mongoose.Schema({
     location: {
         type: String
     },
-    appearances: [
+     appearances: [
         {
-            type: String
+            publicId: {
+                type: String
+            },
+            eTag: {
+                type: String
+            },
+            resultUrl: {
+                type: String
+            }
         }
     ],
     bio: {
