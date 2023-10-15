@@ -3,20 +3,24 @@ const jwt = require('jsonwebtoken');
 const crypto = require('crypto');
 const validator = require('validator');
 
-function isPhoneNumber(inputtxt) {
-    var phoneno = /^\d{10}$/;
-    if (inputtxt.value.match(phoneno)) {
-        return true;
+//validate mobile number
+function isValid_Mobile_Number(mobile_number) {
+    let regex = new RegExp(/(0|91)?[6-9][0-9]{9}/);
+    if (mobile_number == null) {
+        return "false";
+    }
+    if (regex.test(mobile_number) == true) {
+        return "true";
     }
     else {
-        return false;
+        return "false";
     }
-};
+}
 
 const userSchema = new mongoose.Schema({
     phoneNumber: {
         type: String,
-        validate: [isPhoneNumber, 'Please enter a valid phone number!'],
+        validate: [isValid_Mobile_Number, "Enter valid phone number."],
         required: true
     },
     name: {
@@ -31,13 +35,14 @@ const userSchema = new mongoose.Schema({
     location: {
         type: String
     },
-     appearances: [
+    appearances: [
         {
             publicId: {
                 type: String
             },
             eTag: {
-                type: String
+                type: String,
+                unique: true
             },
             resultUrl: {
                 type: String
@@ -89,7 +94,7 @@ const userSchema = new mongoose.Schema({
     },
     locationPreferences: [
         {
-        type: String
+            type: String
         }
     ],
     likeToDate: [
