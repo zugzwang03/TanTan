@@ -10,5 +10,6 @@ router.route('/datingPreferences/user').post(isAuthenticated, userController.dat
 router.route('/personalInfo/user').post(isAuthenticated, userController.personalInfo);
 router.route('/locationServices/user').post(isAuthenticated, userController.locationServices);
 router.route('/likeToDate/user').post(isAuthenticated, userController.likeToDate);
+router.route('/editProfile/user').post(isAuthenticated, userController.editProfile);
 
 module.exports = router;
