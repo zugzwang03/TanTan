@@ -32,7 +32,6 @@ const appearances = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber, appearances
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
-    console.log(user);
     if (!user) {
         return next(new ErrorHandler("User has not logged in yet", '401'));
     }
@@ -43,8 +42,9 @@ const appearances = catchAsyncErrors(async (req, res, next) => {
                 console.log(error);
                 return next(new ErrorHandler('Some error occurred!', '500'));
             } else {
-                await User.findByIdAndUpdate(user._id, { $push: { appearances: result.url } },
+                await User.findByIdAndUpdate(user._id, { $push: { appearances:  { eTag: result.etag, publicId: result.public_id, resultUrl: result.secure_url } } },
                     { new: true });
+                console.log(result);
 
             }
         }).end(appearance.data);
