@@ -11,5 +11,7 @@ router.route('/personalInfo/user').post(isAuthenticated, userController.personal
 router.route('/locationServices/user').post(isAuthenticated, userController.locationServices);
 router.route('/likeToDate/user').post(isAuthenticated, userController.likeToDate);
 router.route('/editProfile/user').post(isAuthenticated, userController.editProfile);
+router.route('/addDate/user').post(isAuthenticated, userController.addDate);
+router.route('/getAllDates/user').get(isAuthenticated, userController.getAllDates);
 
 module.exports = router;

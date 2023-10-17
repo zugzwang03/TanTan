@@ -105,6 +105,20 @@ const userSchema = new mongoose.Schema({
     pets: {
         type: String
     },
+    dates: [
+        {
+            user_id: {
+                type: mongoose.Schema.Types.ObjectId,
+                ref: "User"
+            },
+            name: {
+                type: String
+            },
+            date: {
+                type: Date
+            }
+        }
+    ]
     // role: {
     //     type: String,
     //     default: 'user',

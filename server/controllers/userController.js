@@ -133,9 +133,26 @@ const editProfile = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler('user not logged in', '401'));
     }
-    var userAppearances = req.files.appearances;
-    if (userAppearances.length) {
-        for (const appearance of userAppearances) {
+    console.log(req.files);
+    if (req.files) {
+        var userAppearances = req.files.appearances;
+        if (userAppearances.length) {
+            for (const appearance of userAppearances) {
+                cloudinary.v2.uploader.upload_stream({ folder: "Tantan", resource_type: 'auto' }, async (error, result) => {
+                    if (error) {
+                        console.log(error);
+                        return next(new ErrorHandler('Some error occurred!', '500'));
+                    } else {
+                        var newuser = await User.find({ "appearances.eTag": { $in: [result.etag] } });
+                        if (newuser.length == 0) {
+                            user = await User.findByIdAndUpdate(user._id, { $push: { appearances: { eTag: result.etag, publicId: result.public_id, resultUrl: result.secure_url } } },
+                                { new: true });
+                        }
+                    }
+                }).end(appearance.data);
+            }
+        }
+        else {
             cloudinary.v2.uploader.upload_stream({ folder: "Tantan", resource_type: 'auto' }, async (error, result) => {
                 if (error) {
                     console.log(error);
@@ -147,22 +164,8 @@ const editProfile = catchAsyncErrors(async (req, res, next) => {
                             { new: true });
                     }
                 }
-            }).end(appearance.data);
+            }).end(userAppearances.data);
         }
-    }
-    else {
-        cloudinary.v2.uploader.upload_stream({ folder: "Tantan", resource_type: 'auto' }, async (error, result) => {
-            if (error) {
-                console.log(error);
-                return next(new ErrorHandler('Some error occurred!', '500'));
-            } else {
-                var newuser = await User.find({ "appearances.eTag": { $in: [result.etag] } });
-                if (newuser.length == 0) {
-                    user = await User.findByIdAndUpdate(user._id, { $push: { appearances: { eTag: result.etag, publicId: result.public_id, resultUrl: result.secure_url } } },
-                        { new: true });
-                }
-            }
-        }).end(userAppearances.data);
     }
 
     user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
@@ -172,4 +175,35 @@ const editProfile = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile };
+const addDate = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, phoneNumberOfDate
+    var { phoneNumber, phoneNumberOfDate, obtainedDate } = req.body;
+    var user = await User.find({ phoneNumber });
+    var userToDate = await User.find({ phoneNumber: phoneNumberOfDate });
+    if (!user) {
+        return next(new ErrorHandler("User not logged in", '401'));
+    }
+    if (!userToDate) {
+        return next(new ErrorHandler("User to date not logged in", '401'));
+    }
+    user = await User.findByIdAndUpdate(user[0]._id, { $push: { dates: { user_id: userToDate[0]._id, name: userToDate[0].name, date: obtainedDate } } }, {new: true});
+    res.status(200).json({
+        success: true,
+        user
+    });
+})
+
+const getAllDates = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber
+    var user = await User.find({ phoneNumber: req.query.phoneNumber });
+    if (!user) {
+        return next(new ErrorHandler("User not logged in", '401'));
+    }
+    var allDates = user[0].dates;
+    res.status(200).json({
+        success: true,
+        allDates
+    })
+});
+
+module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates };
