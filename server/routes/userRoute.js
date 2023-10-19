@@ -13,5 +13,7 @@ router.route('/likeToDate/user').post(isAuthenticated, userController.likeToDate
 router.route('/editProfile/user').post(isAuthenticated, userController.editProfile);
 router.route('/addDate/user').post(isAuthenticated, userController.addDate);
 router.route('/getAllDates/user').get(isAuthenticated, userController.getAllDates);
+router.route('/addLike/user').post(isAuthenticated, userController.addLike);
+router.route('/getLikes/user').get(isAuthenticated, userController.getLikes);
 
 module.exports = router;

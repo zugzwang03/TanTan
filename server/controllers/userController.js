@@ -10,7 +10,7 @@ const login = catchAsyncErrors(async (req, res, next) => {
     if (user) {
         return next(new ErrorHandler("Another account with same phone number already exists", '401'));
     }
-    user = await User.create({ phoneNumber });
+    user = await User.create({ phoneNumber, likes: 0 });
     sendCookie(user, 201, res);
 });
 
@@ -186,7 +186,7 @@ const addDate = catchAsyncErrors(async (req, res, next) => {
     if (!userToDate) {
         return next(new ErrorHandler("User to date not logged in", '401'));
     }
-    user = await User.findByIdAndUpdate(user[0]._id, { $push: { dates: { user_id: userToDate[0]._id, name: userToDate[0].name, date: obtainedDate } } }, {new: true});
+    user = await User.findByIdAndUpdate(user[0]._id, { $push: { dates: { user_id: userToDate[0]._id, name: userToDate[0].name, date: obtainedDate } } }, { new: true });
     res.status(200).json({
         success: true,
         user
@@ -206,4 +206,34 @@ const getAllDates = catchAsyncErrors(async (req, res, next) => {
     })
 });
 
-module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates };
+const addLike = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber
+    var { phoneNumber } = req.body;
+    var user = await User.find({ phoneNumber });
+    if (!user) {
+        return next(new ErrorHandler("User not logged in", "401"));
+    }
+    var userLikes = user[0].likes;
+    userLikes = userLikes + 1;
+    user = await User.findByIdAndUpdate(user[0]._id, { likes: userLikes }, { new: true });
+    res.status(200).json({
+        success: true,
+        user
+    })
+});
+
+const getLikes = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber
+    var user = await User.find({ phoneNumber: req.query.phoneNumber });
+    if (!user) {
+        return next(new ErrorHandler("User not logged in", "401"));
+    }
+    console.log(user);
+    var noOfLikes = user[0].likes;
+    res.status(200).json({
+        success: true,
+        noOfLikes
+    });
+});
+
+module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes };

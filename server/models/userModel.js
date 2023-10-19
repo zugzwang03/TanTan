@@ -41,8 +41,7 @@ const userSchema = new mongoose.Schema({
                 type: String
             },
             eTag: {
-                type: String,
-                unique: true
+                type: String
             },
             resultUrl: {
                 type: String
@@ -118,7 +117,10 @@ const userSchema = new mongoose.Schema({
                 type: Date
             }
         }
-    ]
+    ],
+    likes: {
+        type: Number
+    }
     // role: {
     //     type: String,
     //     default: 'user',
