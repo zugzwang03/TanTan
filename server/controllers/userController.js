@@ -36,19 +36,36 @@ const appearances = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler("User has not logged in yet", '401'));
     }
     var userAppearances = req.files.appearances;
-    for (const appearance of userAppearances) {
+    console.log(Array.isArray(userAppearances));
+    if (Array.isArray(userAppearances) == false) {
         cloudinary.v2.uploader.upload_stream({ folder: "Tantan", resource_type: 'auto' }, async (error, result) => {
             if (error) {
                 console.log(error);
                 return next(new ErrorHandler('Some error occurred!', '500'));
             } else {
-                var newuser = await User.find({ "appearances.eTag": { $in: [result.etag] } });
+                var newuser = await User.find({ "_id": user._id, "appearances.eTag": { $in: [result.etag] } });
                 if (newuser.length == 0) {
                     user = await User.findByIdAndUpdate(user._id, { $push: { appearances: { eTag: result.etag, publicId: result.public_id, resultUrl: result.secure_url } } },
                         { new: true });
                 }
             }
-        }).end(appearance.data);
+        }).end(userAppearances.data);
+    }
+    else {
+        for (var i = 0; i < userAppearances.length; i++) {
+            cloudinary.v2.uploader.upload_stream({ folder: "Tantan", resource_type: 'auto' }, async (error, result) => {
+                if (error) {
+                    console.log(error);
+                    return next(new ErrorHandler('Some error occurred!', '500'));
+                } else {
+                    var newuser = await User.find({ "_id": user._id, "appearances.eTag": { $in: [result.etag] } });
+                    if (newuser.length == 0) {
+                        user = await User.findByIdAndUpdate(user._id, { $push: { appearances: { eTag: result.etag, publicId: result.public_id, resultUrl: result.secure_url } } },
+                            { new: true });
+                    }
+                }
+            }).end(userAppearances[i].data);
+        }
     }
     res.status(200).json({
         success: true,
