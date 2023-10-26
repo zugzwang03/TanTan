@@ -3,7 +3,7 @@ const dotenv = require('dotenv');
 const mongoose = require('mongoose');
 const cloudinary = require('cloudinary');
 
-dotenv.config({ path: './config/config.env' });
+dotenv.config({ path: '../config.env' });
 
 cloudinary.config({
     cloud_name: process.env.CLOUDINARY_NAME,

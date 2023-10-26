@@ -7,7 +7,7 @@ const mongoose = require('mongoose');
 const Message = require('./models/messageSchema.js');
 const { Server } = require("socket.io");
 
-dotenv.config({ path: '../config/config.env' });
+dotenv.config({ path: '../config.env' });
 const mongoDB = process.env.MONGO_URI;
 
 // mongoDB connection established
