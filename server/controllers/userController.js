@@ -80,7 +80,7 @@ const aboutMe = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler('User not logged in', '401'));
     }
-    await User.findByIdAndUpdate(user._id, req.body, { new: true })
+    user = await User.findByIdAndUpdate(user._id, req.body, { new: true })
     res.status(200).json({
         success: true,
         user
@@ -94,7 +94,7 @@ const datingPreferences = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler("User not logged in", '401'));
     }
-    await User.findByIdAndUpdate(user._id, req.body, { new: true });
+    user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
     res.status(200).json({
         success: true,
         user
@@ -108,7 +108,7 @@ const personalInfo = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler('user not logged in', '401'));
     }
-    await User.findByIdAndUpdate(user._id, req.body, { new: true });
+    user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
     res.status(200).json({
         success: true,
         user
@@ -122,7 +122,7 @@ const locationServices = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler('user not logged in', '401'));
     }
-    await User.findByIdAndUpdate(user._id, req.body, { new: true });
+    user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
     res.status(200).json({
         success: true,
         user
@@ -136,7 +136,7 @@ const likeToDate = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler('user not logged in', '401'));
     }
-    await User.findByIdAndUpdate(user._id, req.body, { new: true });
+    user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
     res.status(200).json({
         success: true,
         user
