@@ -247,12 +247,14 @@ const addLike = catchAsyncErrors(async (req, res, next) => {
 
 const getLikes = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber
-    var user = await User.find({ phoneNumber: req.query.phoneNumber });
+    var user = await User.findOne({ phoneNumber: req.query.phoneNumber });
     if (!user) {
         return next(new ErrorHandler("User not logged in", "401"));
     }
-    console.log(user);
-    var noOfLikes = user[0].likes;
+    var noOfLikes = 0;
+    if(user.likes) {
+        noOfLikes = user.likes;
+    }
     res.status(200).json({
         success: true,
         noOfLikes
