@@ -23,6 +23,10 @@ const profileOverview = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User has not logged in yet", '401'));
     }
     user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
@@ -37,6 +41,10 @@ const appearances = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User has not logged in yet", '401'));
     }
     var userAppearances = req.files.appearances;
@@ -82,6 +90,10 @@ const aboutMe = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler('User not logged in', '401'));
     }
     user = await User.findByIdAndUpdate(user._id, req.body, { new: true })
@@ -96,6 +108,10 @@ const datingPreferences = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User not logged in", '401'));
     }
     user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
@@ -110,6 +126,10 @@ const personalInfo = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler('user not logged in', '401'));
     }
     user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
@@ -124,6 +144,10 @@ const locationServices = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler('user not logged in', '401'));
     }
     user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
@@ -138,6 +162,10 @@ const likeToDate = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler('user not logged in', '401'));
     }
     user = await User.findByIdAndUpdate(user._id, req.body, { new: true });
@@ -152,6 +180,10 @@ const editProfile = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler('user not logged in', '401'));
     }
     console.log(req.files);
@@ -202,9 +234,17 @@ const addDate = catchAsyncErrors(async (req, res, next) => {
     var user = await User.find({ phoneNumber });
     var userToDate = await User.find({ phoneNumber: phoneNumberOfDate });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User not logged in", '401'));
     }
     if (!userToDate) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User to date not logged in", '401'));
     }
     user = await User.findByIdAndUpdate(user[0]._id, { $push: { dates: { user_id: userToDate[0]._id, name: userToDate[0].name, date: obtainedDate } } }, { new: true });
@@ -218,6 +258,10 @@ const getAllDates = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber
     var user = await User.findOne({ phoneNumber: req.query.phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User not logged in", '401'));
     }
     var allDates = [];
@@ -235,6 +279,10 @@ const addLike = catchAsyncErrors(async (req, res, next) => {
     var { phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User not logged in", "401"));
     }
     var userLikes = user.likes;
@@ -253,6 +301,10 @@ const getLikes = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber
     var user = await User.findOne({ phoneNumber: req.query.phoneNumber });
     if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
         return next(new ErrorHandler("User not logged in", "401"));
     }
     var noOfLikes = 0;
