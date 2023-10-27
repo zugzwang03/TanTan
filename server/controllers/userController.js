@@ -229,13 +229,16 @@ const getAllDates = catchAsyncErrors(async (req, res, next) => {
 const addLike = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber
     var { phoneNumber } = req.body;
-    var user = await User.find({ phoneNumber });
+    var user = await User.findOne({ phoneNumber });
     if (!user) {
         return next(new ErrorHandler("User not logged in", "401"));
     }
-    var userLikes = user[0].likes;
-    userLikes = userLikes + 1;
-    user = await User.findByIdAndUpdate(user[0]._id, { likes: userLikes }, { new: true });
+    var userLikes = user.likes;
+    if(user.likes)
+        userLikes = userLikes + 1;
+    else 
+        userLikes = 1;
+    user = await User.findByIdAndUpdate(user._id, { likes: userLikes }, { new: true });
     res.status(200).json({
         success: true,
         user
