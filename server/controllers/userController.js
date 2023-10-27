@@ -193,7 +193,7 @@ const editProfile = catchAsyncErrors(async (req, res, next) => {
 });
 
 const addDate = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber, phoneNumberOfDate
+    // phoneNumber, phoneNumberOfDate, obtainedDate
     var { phoneNumber, phoneNumberOfDate, obtainedDate } = req.body;
     var user = await User.find({ phoneNumber });
     var userToDate = await User.find({ phoneNumber: phoneNumberOfDate });
@@ -216,7 +216,10 @@ const getAllDates = catchAsyncErrors(async (req, res, next) => {
     if (!user) {
         return next(new ErrorHandler("User not logged in", '401'));
     }
-    var allDates = user[0].dates;
+    var allDates = [];
+    if(user[0].dates) {
+        allDates = user[0].dates;  
+    }
     res.status(200).json({
         success: true,
         allDates
