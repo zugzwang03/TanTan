@@ -212,13 +212,13 @@ const addDate = catchAsyncErrors(async (req, res, next) => {
 
 const getAllDates = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber
-    var user = await User.find({ phoneNumber: req.query.phoneNumber });
+    var user = await User.findOne({ phoneNumber: req.query.phoneNumber });
     if (!user) {
         return next(new ErrorHandler("User not logged in", '401'));
     }
     var allDates = [];
-    if(user[0].dates) {
-        allDates = user[0].dates;  
+    if(user.dates) {
+        allDates = user.dates;  
     }
     res.status(200).json({
         success: true,
