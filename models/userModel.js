@@ -23,6 +23,13 @@ const userSchema = new mongoose.Schema({
         validate: [isValid_Mobile_Number, "Enter valid phone number."],
         required: true
     },
+    gems: {
+        type: Number
+    },
+    membership: {
+        type: String,
+        default: 'free'
+    },
     name: {
         type: String,
     },
@@ -132,9 +139,12 @@ const userSchema = new mongoose.Schema({
             }
         }
     ],
-    likes: {
+    noOfLikes: {
         type: Number
     },
+    whoLikedYou: [{
+        type: String
+    }],
     availableTime: {
         startTime: {
             type: Date

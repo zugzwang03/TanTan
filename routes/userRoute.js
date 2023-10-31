@@ -19,5 +19,10 @@ router.route('/setAvailableTime/user').post(isAuthenticated, userController.setA
 router.route('/askToDate/user').post(isAuthenticated, userController.askToDate);
 router.route('/addDateReview/user').post(isAuthenticated, userController.addDateReview);
 router.route('/getPastDates/user').get(isAuthenticated, userController.getPastDates);
+router.route('/earnGems/user').post(isAuthenticated, userController.earnGems);
+router.route('/spendGems/user').post(isAuthenticated, userController.spendGems);
+router.route('/purchaseMembershipsByGems/user').post(isAuthenticated, userController.purchaseMembershipsByGems);
+router.route('/getPotentialDates/user').get(isAuthenticated, userController.getPotentialDates);
+router.route('/readFeedback/user').get(isAuthenticated, userController.readFeedback);
 
 module.exports = router;

@@ -231,8 +231,8 @@ const editProfile = catchAsyncErrors(async (req, res, next) => {
 const addDate = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber, phoneNumberOfDate, obtainedDate, location
     var { phoneNumber, phoneNumberOfDate, obtainedDate, location } = req.body;
-    var user = await User.find({ phoneNumber });
-    var userToDate = await User.find({ phoneNumber: phoneNumberOfDate });
+    var user = await User.findOne({ phoneNumber });
+    var userToDate = await User.findOne({ phoneNumber: phoneNumberOfDate });
     if (!user) {
         res.status(401).json({
             success: false,
@@ -247,11 +247,12 @@ const addDate = catchAsyncErrors(async (req, res, next) => {
         });
         return next(new ErrorHandler("User to date not logged in", '401'));
     }
-    console.log(phoneNumber, phoneNumberOfDate, obtainedDate, location);
-    user = await User.findByIdAndUpdate(user[0]._id, { $push: { dates: { user_id: userToDate[0]._id, name: userToDate[0].name, date: obtainedDate, location } } }, { new: true });
+    user = await User.findByIdAndUpdate(user._id, { $push: { dates: { user_id: userToDate._id, name: userToDate.name, date: obtainedDate, location } } }, { new: true });
+    var nuser = await User.findByIdAndUpdate(userToDate._id, { $push: { dates: { user_id: user._id, name: user.name, date: obtainedDate, location } } }, { new: true });
     res.status(200).json({
         success: true,
-        user
+        user,
+        nuser
     });
 })
 
@@ -276,25 +277,38 @@ const getAllDates = catchAsyncErrors(async (req, res, next) => {
 });
 
 const addLike = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber
-    var { phoneNumber } = req.body;
+    // phoneNumber, liked_user_id
+    var { phoneNumber, liked_user_id } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
-        res.status(401).json({
+        return res.status(401).json({
             success: false,
             "error message": "User has not logged in yet"
         });
-        return next(new ErrorHandler("User not logged in", "401"));
     }
-    var userLikes = user.likes;
-    if (user.likes)
+    var liked_user = await User.findOne({ _id: liked_user_id });
+    if (user.id == liked_user.id) {
+        return res.status(500).json({
+            success: false,
+            "error message": "you cannot like your own profile"
+        });
+    }
+    var already_liked = await User.findOne({ _id: liked_user_id, whoLikedYou: { $in: [user._id] } });
+    if (already_liked) {
+        return res.status(500).json({
+            success: false,
+            "error message": "already liked by same user"
+        });
+    }
+    var userLikes = liked_user.noOfLikes;
+    if (liked_user.noOfLikes)
         userLikes = userLikes + 1;
     else
         userLikes = 1;
-    user = await User.findByIdAndUpdate(user._id, { likes: userLikes }, { new: true });
+    liked_user = await User.findByIdAndUpdate(liked_user._id, { noOfLikes: userLikes, $push: { "whoLikedYou": user._id } }, { new: true });
     res.status(200).json({
         success: true,
-        user
+        liked_user
     })
 });
 
@@ -308,13 +322,20 @@ const getLikes = catchAsyncErrors(async (req, res, next) => {
         });
         return next(new ErrorHandler("User not logged in", "401"));
     }
+    if (user.membership != 'VIP') {
+        return res.status(500).json({
+            success: false,
+            "error message": "you need to upgrade your membership to access this feature"
+        });
+    }
     var noOfLikes = 0;
-    if (user.likes) {
-        noOfLikes = user.likes;
+    if (user.noOfLikes) {
+        noOfLikes = user.noOfLikes;
     }
     res.status(200).json({
         success: true,
-        noOfLikes
+        noOfLikes,
+        "who liked you": user.whoLikedYou
     });
 });
 
@@ -374,7 +395,7 @@ const addDateReview = catchAsyncErrors(async (req, res, next) => {
 });
 
 const getPastDates = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber, 
+    // phoneNumber 
     var phoneNumber = req.query.phoneNumber;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
@@ -384,8 +405,8 @@ const getPastDates = catchAsyncErrors(async (req, res, next) => {
         });
     }
     var pastDates = [];
-    for(var dates of user.dates) {
-        if(dates.date < Date.now()) {
+    for (var dates of user.dates) {
+        if (dates.date < Date.now()) {
             pastDates.push(dates);
         }
     }
@@ -395,4 +416,115 @@ const getPastDates = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes, setAvailableTime, askToDate, addDateReview, getPastDates };
+const earnGems = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, noOfGems
+    var { phoneNumber, noOfGems } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    var alreadyPresentGems = user.gems;
+    user = await User.findByIdAndUpdate(user._id, { gems: Number(alreadyPresentGems) + Number(noOfGems) }, { new: true });
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+const spendGems = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, noOfGems
+    var { phoneNumber, noOfGems } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    var alreadyPresentGems = user.gems;
+    if (Number(alreadyPresentGems) - Number(noOfGems) < 0) {
+        return res.status(500).json({
+            success: false,
+            "error message": "not enough gems left to be spent upon"
+        });
+    }
+    user = await User.findByIdAndUpdate(user._id, { gems: Number(alreadyPresentGems) - Number(noOfGems) }, { new: true });
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+const purchaseMembershipsByGems = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber
+    var { phoneNumber } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    user = await User.findByIdAndUpdate(user._id, { membership: "VIP" }, { new: true });
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+const getPotentialDates = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber
+    var phoneNumber = req.query.phoneNumber;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    var averageTimeUser = (Number(user.availableTime.startTime) + Number(user.availableTime.endTime)) / 2;
+    var allUsers = await User.find({});
+    var potentialDates = [];
+    for (var presentUser of allUsers) {
+        if ((presentUser.id != user._id) && (presentUser.availableTime)) {
+            var averageTimePresentUser = (Number(presentUser.availableTime.startTime) + Number(presentUser.availableTime.endTime)) / 2;
+            potentialDates.push({ absDiff: Number(averageTimePresentUser - averageTimeUser) / 2, presentUser });
+        }
+    }
+    function comp(a, b) {
+        return a.absDiff - b.absDiff;
+    }
+    potentialDates.sort(comp);
+    res.status(200).json({
+        success: true,
+        potentialDates
+    });
+});
+
+const readFeedback = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, date_id
+    var { phoneNumber, date_id } = req.query;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    if (user.membership != 'VIP') {
+        return res.status(500).json({
+            success: false,
+            "error message": "you need to upgrade your membership to access this feature"
+        });
+    }
+
+    return res.status(200).json({
+        success: false,
+        "error message": "date id not found for this user"
+    });
+});
+
+module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes, setAvailableTime, askToDate, addDateReview, getPastDates, earnGems, spendGems, purchaseMembershipsByGems, getPotentialDates, readFeedback };
