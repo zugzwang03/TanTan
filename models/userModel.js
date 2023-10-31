@@ -115,12 +115,56 @@ const userSchema = new mongoose.Schema({
             },
             date: {
                 type: Date
+            },
+            location: {
+                type: String
+            },
+            reviews: {
+                experienceRating: {
+                    type: String
+                },
+                whatDidYouLike: [{
+                    type: String
+                }],
+                comment: {
+                    type: String
+                }
             }
         }
     ],
     likes: {
         type: Number
-    }
+    },
+    availableTime: {
+        startTime: {
+            type: Date
+        },
+        endTime: {
+            type: Date
+        },
+        repeat: {
+            type: String
+        },
+        proposal: {
+            type: String
+        }
+    },
+    askedToDate: [{
+        user_id: {
+            type: String
+        },
+        name: {
+            type: String
+        }
+    }],
+    askToDate: [{
+        user_id: {
+            type: String
+        },
+        name: {
+            type: String
+        }
+    }]
     // role: {
     //     type: String,
     //     default: 'user',

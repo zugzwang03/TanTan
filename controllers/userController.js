@@ -229,8 +229,8 @@ const editProfile = catchAsyncErrors(async (req, res, next) => {
 });
 
 const addDate = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber, phoneNumberOfDate, obtainedDate
-    var { phoneNumber, phoneNumberOfDate, obtainedDate } = req.body;
+    // phoneNumber, phoneNumberOfDate, obtainedDate, location
+    var { phoneNumber, phoneNumberOfDate, obtainedDate, location } = req.body;
     var user = await User.find({ phoneNumber });
     var userToDate = await User.find({ phoneNumber: phoneNumberOfDate });
     if (!user) {
@@ -247,7 +247,8 @@ const addDate = catchAsyncErrors(async (req, res, next) => {
         });
         return next(new ErrorHandler("User to date not logged in", '401'));
     }
-    user = await User.findByIdAndUpdate(user[0]._id, { $push: { dates: { user_id: userToDate[0]._id, name: userToDate[0].name, date: obtainedDate } } }, { new: true });
+    console.log(phoneNumber, phoneNumberOfDate, obtainedDate, location);
+    user = await User.findByIdAndUpdate(user[0]._id, { $push: { dates: { user_id: userToDate[0]._id, name: userToDate[0].name, date: obtainedDate, location } } }, { new: true });
     res.status(200).json({
         success: true,
         user
@@ -265,8 +266,8 @@ const getAllDates = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler("User not logged in", '401'));
     }
     var allDates = [];
-    if(user.dates) {
-        allDates = user.dates;  
+    if (user.dates) {
+        allDates = user.dates;
     }
     res.status(200).json({
         success: true,
@@ -286,9 +287,9 @@ const addLike = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler("User not logged in", "401"));
     }
     var userLikes = user.likes;
-    if(user.likes)
+    if (user.likes)
         userLikes = userLikes + 1;
-    else 
+    else
         userLikes = 1;
     user = await User.findByIdAndUpdate(user._id, { likes: userLikes }, { new: true });
     res.status(200).json({
@@ -308,7 +309,7 @@ const getLikes = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler("User not logged in", "401"));
     }
     var noOfLikes = 0;
-    if(user.likes) {
+    if (user.likes) {
         noOfLikes = user.likes;
     }
     res.status(200).json({
@@ -317,4 +318,81 @@ const getLikes = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes };
+const setAvailableTime = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, startTime, endTime, repeat, proposal
+    var { phoneNumber, startTime, endTime, repeat, proposal } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    user = await User.findByIdAndUpdate(user._id, { availableTime: { startTime, endTime, repeat, proposal } }, { new: true });
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+const askToDate = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, user_id_to_date
+    var { phoneNumber, user_id_to_date } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    var nuser = await User.findOne({ _id: user_id_to_date });
+    user = await User.findByIdAndUpdate(user._id, { $push: { "askToDate": { user_id: nuser._id, name: nuser.name } } }, { new: true });
+    nuser = await User.findByIdAndUpdate(nuser._id, { $push: { "askedToDate": { user_id: user._id, name: user.name } } }, { new: true });
+    res.status(200).json({
+        success: true,
+        user,
+        nuser
+    });
+});
+
+const addDateReview = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, date_id, experienceRating, whatDidYouLike, comment
+    var { phoneNumber, date_id, experienceRating, whatDidYouLike, comment } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    console.log(phoneNumber, date_id, experienceRating, whatDidYouLike, comment);
+    var user = await User.findOneAndUpdate({ _id: user._id, "dates._id": date_id }, { "dates.$.reviews": { experienceRating, whatDidYouLike, comment } }, { new: true });
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+const getPastDates = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, 
+    var phoneNumber = req.query.phoneNumber;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    var pastDates = [];
+    for(var dates of user.dates) {
+        if(dates.date < Date.now()) {
+            pastDates.push(dates);
+        }
+    }
+    res.status(200).json({
+        success: true,
+        pastDates
+    });
+});
+
+module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes, setAvailableTime, askToDate, addDateReview, getPastDates };

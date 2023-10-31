@@ -15,5 +15,9 @@ router.route('/addDate/user').post(isAuthenticated, userController.addDate);
 router.route('/getAllDates/user').get(isAuthenticated, userController.getAllDates);
 router.route('/addLike/user').post(isAuthenticated, userController.addLike);
 router.route('/getLikes/user').get(isAuthenticated, userController.getLikes);
+router.route('/setAvailableTime/user').post(isAuthenticated, userController.setAvailableTime);
+router.route('/askToDate/user').post(isAuthenticated, userController.askToDate);
+router.route('/addDateReview/user').post(isAuthenticated, userController.addDateReview);
+router.route('/getPastDates/user').get(isAuthenticated, userController.getPastDates);
 
 module.exports = router;
