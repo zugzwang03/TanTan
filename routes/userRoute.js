@@ -24,5 +24,8 @@ router.route('/spendGems/user').post(isAuthenticated, userController.spendGems);
 router.route('/purchaseMembershipsByGems/user').post(isAuthenticated, userController.purchaseMembershipsByGems);
 router.route('/getPotentialDates/user').get(isAuthenticated, userController.getPotentialDates);
 router.route('/readFeedback/user').get(isAuthenticated, userController.readFeedback);
+router.route('/reportUser/user').post(isAuthenticated, userController.reportUser);
+router.route('/support/user').post(isAuthenticated, userController.support);
+router.route('/removePhoto/user').post(isAuthenticated, userController.removePhoto);
 
 module.exports = router;

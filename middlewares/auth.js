@@ -3,6 +3,7 @@ const ErrorHandler = require("../utils/errorHandler.js");
 const catchAsyncErrors = require("./catchAsyncErrors.js");
 const jwt = require("jsonwebtoken");
 const dotenv = require("dotenv");
+const Admin = require("../models/adminModel.js");
 
 dotenv.config({ path: ".././config/config.env" });
 
@@ -12,7 +13,10 @@ const isAuthenticated = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler("Please Login to access this resource", 401));
     }
     const decodedData = jwt.verify(token, process.env.JWT_SECRET);
-    req.user = await User.findById(decodedData.id);
+    if(req.query.role == 'user')
+        req.user = await User.findById(decodedData.id);
+    else
+        req.user = await Admin.findById(decodedData.id);
     next();
 });
 

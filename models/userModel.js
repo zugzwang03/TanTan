@@ -26,6 +26,10 @@ const userSchema = new mongoose.Schema({
     gems: {
         type: Number
     },
+    verified: {
+        type: Boolean,
+        default: false
+    },
     membership: {
         type: String,
         default: 'free'
@@ -174,6 +178,12 @@ const userSchema = new mongoose.Schema({
         name: {
             type: String
         }
+    }],
+    reports: [{
+        type: String
+    }],
+    issueFaced: [{
+        type: String
     }]
     // role: {
     //     type: String,

@@ -48,7 +48,6 @@ const appearances = catchAsyncErrors(async (req, res, next) => {
         return next(new ErrorHandler("User has not logged in yet", '401'));
     }
     var userAppearances = req.files.appearances;
-    console.log(Array.isArray(userAppearances));
     if (Array.isArray(userAppearances) == false) {
         cloudinary.v2.uploader.upload_stream({ folder: "Tantan", resource_type: 'auto' }, async (error, result) => {
             if (error) {
@@ -82,7 +81,30 @@ const appearances = catchAsyncErrors(async (req, res, next) => {
     res.status(200).json({
         success: true,
         user
-    })
+    });
+});
+
+const removePhoto = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, photo
+    var { phoneNumber, photo } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
+        return next(new ErrorHandler('User not logged in', '401'));
+    }
+    for(var appearance of user.appearances) {
+        if(appearance.resultUrl == photo) {
+            user = await User.findOneAndUpdate({ _id: user._id }, { $pull: { 'appearances': { '_id': appearance._id } } }, { new: true });
+            break;
+        }
+    }
+    res.status(200).json({
+        success: false,
+        user
+    });
 });
 
 const aboutMe = catchAsyncErrors(async (req, res, next) => {
@@ -277,8 +299,8 @@ const getAllDates = catchAsyncErrors(async (req, res, next) => {
 });
 
 const addLike = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber, liked_user_id
-    var { phoneNumber, liked_user_id } = req.body;
+    // phoneNumber, liked_user_phoneNumber
+    var { phoneNumber, liked_user_phoneNumber } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
         return res.status(401).json({
@@ -286,14 +308,14 @@ const addLike = catchAsyncErrors(async (req, res, next) => {
             "error message": "User has not logged in yet"
         });
     }
-    var liked_user = await User.findOne({ _id: liked_user_id });
+    var liked_user = await User.findOne({ phoneNumber: liked_user_phoneNumber });
     if (user.id == liked_user.id) {
         return res.status(500).json({
             success: false,
             "error message": "you cannot like your own profile"
         });
     }
-    var already_liked = await User.findOne({ _id: liked_user_id, whoLikedYou: { $in: [user._id] } });
+    var already_liked = await User.findOne({ phoneNumber: liked_user_phoneNumber, whoLikedYou: { $in: [user._id] } });
     if (already_liked) {
         return res.status(500).json({
             success: false,
@@ -357,8 +379,8 @@ const setAvailableTime = catchAsyncErrors(async (req, res, next) => {
 });
 
 const askToDate = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber, user_id_to_date
-    var { phoneNumber, user_id_to_date } = req.body;
+    // phoneNumber, user_phoneNumber_to_date
+    var { phoneNumber, user_phoneNumber_to_date } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
         return res.status(401).json({
@@ -366,7 +388,7 @@ const askToDate = catchAsyncErrors(async (req, res, next) => {
             "error message": "user not logged in yet"
         });
     }
-    var nuser = await User.findOne({ _id: user_id_to_date });
+    var nuser = await User.findOne({ phoneNumber: user_phoneNumber_to_date });
     user = await User.findByIdAndUpdate(user._id, { $push: { "askToDate": { user_id: nuser._id, name: nuser.name } } }, { new: true });
     nuser = await User.findByIdAndUpdate(nuser._id, { $push: { "askedToDate": { user_id: user._id, name: user.name } } }, { new: true });
     res.status(200).json({
@@ -377,8 +399,8 @@ const askToDate = catchAsyncErrors(async (req, res, next) => {
 });
 
 const addDateReview = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber, date_id, experienceRating, whatDidYouLike, comment
-    var { phoneNumber, date_id, experienceRating, whatDidYouLike, comment } = req.body;
+    // phoneNumber, date_user_phoneNumber, experienceRating, whatDidYouLike, comment
+    var { phoneNumber, date_user_phoneNumber, experienceRating, whatDidYouLike, comment } = req.body;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
         return res.status(401).json({
@@ -386,8 +408,14 @@ const addDateReview = catchAsyncErrors(async (req, res, next) => {
             "error message": "user not logged in yet"
         });
     }
-    console.log(phoneNumber, date_id, experienceRating, whatDidYouLike, comment);
-    var user = await User.findOneAndUpdate({ _id: user._id, "dates._id": date_id }, { "dates.$.reviews": { experienceRating, whatDidYouLike, comment } }, { new: true });
+    var date_user = await User.findOne({ phoneNumber: date_user_phoneNumber });
+    if (!date_user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "date user not logged in yet"
+        });
+    }
+    var user = await User.findOneAndUpdate({ _id: user._id, "dates.user_id": date_user._id }, { "dates.$.reviews": { experienceRating, whatDidYouLike, comment } }, { new: true });
     res.status(200).json({
         success: true,
         user
@@ -539,4 +567,39 @@ const readFeedback = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes, setAvailableTime, askToDate, addDateReview, getPastDates, earnGems, spendGems, purchaseMembershipsByGems, getPotentialDates, readFeedback };
+const reportUser = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, phoneNumberReportedUser, reason
+    var { phoneNumber, phoneNumberReportedUser, reason } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    var userToReport = await User.findOne({ phoneNumber: phoneNumberReportedUser });
+    userToReport = await User.findByIdAndUpdate(userToReport._id, { $push: { reports: reason } }, { new: true });
+    res.status(200).json({
+        success: true,
+        userToReport
+    });
+});
+
+const support = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, issueFaced
+    var { phoneNumber, issueFaced } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        return res.status(401).json({
+            success: false,
+            "error message": "user not logged in yet"
+        });
+    }
+    user = await User.findByIdAndUpdate(user._id, { $push: { issueFaced: issueFaced } }, { new: true });
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
+module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes, setAvailableTime, askToDate, addDateReview, getPastDates, earnGems, spendGems, purchaseMembershipsByGems, getPotentialDates, readFeedback, reportUser, support, removePhoto };
