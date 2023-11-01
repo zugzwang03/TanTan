@@ -18,6 +18,24 @@ const login = catchAsyncErrors(async (req, res, next) => {
     sendCookie(user, 201, res);
 });
 
+const addEmail = catchAsyncErrors(async (req, res, next) => {
+    // phoneNumber, email
+    var { phoneNumber, email } = req.body;
+    var user = await User.findOne({ phoneNumber });
+    if (!user) {
+        res.status(401).json({
+            success: false,
+            "error message": "User has not logged in yet"
+        });
+        return next(new ErrorHandler("User has not logged in yet", '401'));
+    }
+    user = await User.findByIdAndUpdate(user._id, { email }, {new: true});
+    res.status(200).json({
+        success: true,
+        user
+    });
+});
+
 const profileOverview = catchAsyncErrors(async (req, res, next) => {
     // phoneNumber, name, gender, age, location
     var { phoneNumber } = req.body;
@@ -33,7 +51,7 @@ const profileOverview = catchAsyncErrors(async (req, res, next) => {
     res.status(200).json({
         success: true,
         user
-    })
+    });
 });
 
 const appearances = catchAsyncErrors(async (req, res, next) => {
@@ -602,4 +620,4 @@ const support = catchAsyncErrors(async (req, res, next) => {
     });
 });
 
-module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes, setAvailableTime, askToDate, addDateReview, getPastDates, earnGems, spendGems, purchaseMembershipsByGems, getPotentialDates, readFeedback, reportUser, support, removePhoto };
+module.exports = { login, profileOverview, appearances, aboutMe, datingPreferences, personalInfo, locationServices, likeToDate, editProfile, addDate, getAllDates, addLike, getLikes, setAvailableTime, askToDate, addDateReview, getPastDates, earnGems, spendGems, purchaseMembershipsByGems, getPotentialDates, readFeedback, reportUser, support, removePhoto, addEmail };

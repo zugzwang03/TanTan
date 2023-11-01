@@ -23,6 +23,9 @@ const userSchema = new mongoose.Schema({
         validate: [isValid_Mobile_Number, "Enter valid phone number."],
         required: true
     },
+    email: {
+        type: String
+    },
     gems: {
         type: Number
     },

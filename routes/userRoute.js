@@ -27,5 +27,6 @@ router.route('/readFeedback/user').get(isAuthenticated, userController.readFeedb
 router.route('/reportUser/user').post(isAuthenticated, userController.reportUser);
 router.route('/support/user').post(isAuthenticated, userController.support);
 router.route('/removePhoto/user').post(isAuthenticated, userController.removePhoto);
+router.route('/addEmail/user').post(isAuthenticated, userController.addEmail);
 
 module.exports = router;
