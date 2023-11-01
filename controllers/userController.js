@@ -505,13 +505,20 @@ const getPotentialDates = catchAsyncErrors(async (req, res, next) => {
 });
 
 const readFeedback = catchAsyncErrors(async (req, res, next) => {
-    // phoneNumber, date_id
-    var { phoneNumber, date_id } = req.query;
+    // phoneNumber, phoneNumberOfDate
+    var { phoneNumber, phoneNumberOfDate } = req.query;
     var user = await User.findOne({ phoneNumber });
     if (!user) {
         return res.status(401).json({
             success: false,
             "error message": "user not logged in yet"
+        });
+    }
+    var dateUser = await User.findOne({ phoneNumber: phoneNumberOfDate });
+    if (!dateUser) {
+        return res.status(401).json({
+            success: false,
+            "error message": "date user not logged in"
         });
     }
     if (user.membership != 'VIP') {
@@ -520,10 +527,15 @@ const readFeedback = catchAsyncErrors(async (req, res, next) => {
             "error message": "you need to upgrade your membership to access this feature"
         });
     }
-
+    var reviews = [];
+    for (var date of dateUser.dates) {
+        if (toString(date.user_id) == toString(user._id)) {
+            reviews.push(date.reviews);
+        }
+    }
     return res.status(200).json({
         success: false,
-        "error message": "date id not found for this user"
+        reviews
     });
 });
 
